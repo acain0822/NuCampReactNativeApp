@@ -10,7 +10,7 @@ function RenderItem({item}){
     return(
       <Card
         featuredTitle={item.name}
-        image={require('./images/react-lake.jpb')}
+        image={require('./images/react-lake.jpg')}
         >
           <Text
           style={{margin: 10}}>
@@ -37,17 +37,15 @@ export default class Home extends Component {
 
   render(){
     return(
-      <View>
-        <Text>This works</Text>
-      </View>
-      // <ScrollView>
-      //   <RenderItem item={this.state.campsites.filter(campsite => campsite.featured)[0]}
-      //   />
-      //   <RenderItem item={this.state.promotions.filter(promotion => promotion.featured)[0]}
-      //   />
-      //   <RenderItem item={this.state.comments.filter(comment => comment.featured)[0]}
-      //   />
-      // </ScrollView>
+     
+      <ScrollView>
+        <RenderItem item={this.state.campsites.filter(campsite => campsite.featured)[0]}
+        />
+        <RenderItem item={this.state.promotions.filter(promotion => promotion.featured)[0]}
+        />
+        <RenderItem item={this.state.comments.filter(comment => comment.featured)[0]}
+        />
+      </ScrollView>
     )
   }
 }
