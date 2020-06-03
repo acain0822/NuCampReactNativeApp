@@ -4,6 +4,7 @@ import { Card } from 'react-native-elements';
 import { CAMPSITES } from '../shared/campsites';
 import { COMMENTS } from '../shared/comments';
 import { PROMOTIONS } from '../shared/promotions';
+import { PARTNERS } from '../shared/partners';
 
 function RenderItem({item}){
   if (item) {
@@ -28,7 +29,8 @@ export default class Home extends Component {
     this.state = {
       campsites: CAMPSITES,
       promotions: PROMOTIONS,
-      comments: COMMENTS
+      comments: COMMENTS,
+      partners: PARTNERS
     };
   }
   static navigationOptions = {
@@ -43,7 +45,7 @@ export default class Home extends Component {
         />
         <RenderItem item={this.state.promotions.filter(promotion => promotion.featured)[0]}
         />
-        <RenderItem item={this.state.comments.filter(comment => comment.featured)[0]}
+        <RenderItem item={this.state.partners.filter(partner => partner.featured)[0]}
         />
       </ScrollView>
     )
