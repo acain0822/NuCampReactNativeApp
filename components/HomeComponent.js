@@ -1,17 +1,34 @@
 import React, { Component } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { Card } from 'react-native-elements';
-import { CAMPSITES } from '../shared/campsites';
-import { COMMENTS } from '../shared/comments';
-import { PROMOTIONS } from '../shared/promotions';
-import { PARTNERS } from '../shared/partners';
+import { connect } from 'react-redux';
+import { baseUrl } from '../shared/baseUrl';
+import Loading from './LoadingComponent';
 
-function RenderItem({item}){
+const mapStateToProps = state => {
+  return {
+    campsites: state.campsites,
+    partners: state.partners,
+    promotions: state.promotions
+  };
+};
+
+function RenderItem(props){
+  const {item} = props;
+
+  if(props.isLoading){
+    return <Loading />
+  }
+
+  if(props.errMess){
+    return <View><Text>{props.errMess}</Text></View>
+  }
+
   if (item) {
     return(
       <Card
         featuredTitle={item.name}
-        image={require('./images/react-lake.jpg')}
+        image={{uri: baseUrl + item.image}}
         >
           <Text
           style={{margin: 10}}>
@@ -23,16 +40,8 @@ function RenderItem({item}){
   return <View />
 }
 
-export default class Home extends Component {
-  constructor(props){
-    super(props);
-    this.state = {
-      campsites: CAMPSITES,
-      promotions: PROMOTIONS,
-      comments: COMMENTS,
-      partners: PARTNERS
-    };
-  }
+class Home extends Component {
+
   static navigationOptions = {
     title: 'Home'
   }
@@ -41,13 +50,15 @@ export default class Home extends Component {
     return(
      
       <ScrollView>
-        <RenderItem item={this.state.campsites.filter(campsite => campsite.featured)[0]}
+        <RenderItem item={this.props.campsites.campsites.filter(campsite => campsite.featured)[0]} isLoading={this.props.campsites.isLoading} errMess={this.props.campsites.errMess}
         />
-        <RenderItem item={this.state.promotions.filter(promotion => promotion.featured)[0]}
+        <RenderItem item={this.props.promotions.promotions.filter(promotion => promotion.featured)[0]} isLoading={this.props.promotions.isLoading} errMess={this.props.promotions.errMess}
         />
-        <RenderItem item={this.state.partners.filter(partner => partner.featured)[0]}
+        <RenderItem item={this.props.partners.partners.filter(partner => partner.featured)[0]} isLoading={this.props.partners.isLoading} errMess={this.props.partners.errMess}
         />
       </ScrollView>
     )
   }
 }
+
+export default connect(mapStateToProps)(Home);

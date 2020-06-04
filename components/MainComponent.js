@@ -6,8 +6,42 @@ import CampsiteInfo from './CampsiteInfoComponent';
 import Home from './HomeComponent';
 import About from './AboutComponent';
 import Contact from './ContactComponent';
+import Reservation from './ReservationComponent';
 import { Icon } from 'react-native-elements';
 import SafeAreaView from 'react-native-safe-area-view';
+import { connect } from 'react-redux';
+import { fetchCampsites, fetchComments, fetchPromotions, fetchPartners } from '../redux/ActionCreators';
+
+
+const mapDispatchToProps = {
+  fetchCampsites,
+  fetchComments,
+  fetchPartners,
+  fetchPromotions
+};
+
+const ReservationNavigator = createStackNavigator(
+  {
+      Reservation: { screen: Reservation }
+  },
+  {
+      navigationOptions: ({navigation}) => ({
+          headerStyle: {
+              backgroundColor: '#5637DD'
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+              color: '#fff'
+          },
+          headerLeft: <Icon
+              name='tree'
+              type='font-awesome'
+              iconStyle={styles.stackIcon}
+              onPress={() => navigation.toggleDrawer()}
+          />
+      })
+  }
+);
 
 const DirectoryNavigator = createStackNavigator(
   {
@@ -143,9 +177,22 @@ const MainNavigator = createDrawerNavigator(
   },
     Directory: { screen:DirectoryNavigator,
       navigationOptions: {
+        drawerLabel: 'Reserve Campsite',
         drawerIcon: ({tintColor}) =>(
           <Icon
             name='list'
+            type='font-awesome'
+            size={24}
+            color={tintColor}
+            />
+        ) 
+      }
+     },
+     Reservation: { screen:ReservationNavigator,
+      navigationOptions: {
+        drawerIcon: ({tintColor}) =>(
+          <Icon
+            name='tree'
             type='font-awesome'
             size={24}
             color={tintColor}
@@ -188,6 +235,13 @@ const MainNavigator = createDrawerNavigator(
 
 
 class Main extends Component {
+  componentDidMount() {
+    this.props.fetchCampsites();
+    this.props.fetchComments();
+    this.props.fetchPartners();
+    this.props.fetchPromotions();
+  }
+
     render() {
       return(
         <View style={{
@@ -229,4 +283,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default Main;
+export default connect(null, mapDispatchToProps)(Main);
