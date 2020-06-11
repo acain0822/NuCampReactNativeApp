@@ -1,10 +1,11 @@
 import React, { Component } from "react";
-import { Text, View, ScrollView, FlatList, Button, Modal, StyleSheet } from "react-native";
+import { Text, View, ScrollView, FlatList, Button, Modal, StyleSheet, Alert, PanResponder } from "react-native";
 import { Card, Icon } from "react-native-elements";
 import { connect } from 'react-redux';
 import { baseUrl } from '../shared/baseUrl';
-import { postFavorite } from '../redux/ActionCreators';
-
+import { postFavorite, postComment } from '../redux/ActionCreators';
+import { Rating, Input } from 'react-native-elements';
+import * as Animatable from 'react-native-animatable';
 const mapStateToProps = state => {
   return {
     campsites: state.campsites,
@@ -14,13 +15,56 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = {
-  postFavorite: campsiteId => (postFavorite(campsiteId))
+  postFavorite: campsiteId => (postFavorite(campsiteId)),
+  postComment: (campsiteId, rating, author, text) => (postComment(campsiteId, rating, author, text))
 };
 
 function RenderCampsite(props) {
   const { campsite } = props;
+
+  const view = React.createRef();
+
+  const recognizeDrag = ({dx}) => (dx < -200) ? true : false;
+
+  const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onPanResponderGrant: () => {
+      view.current.rubberBand(1000)
+      .then( endState => console.log(endState.finished ? 'finished' : 'canceled'));
+    },
+    onPanResponderEnd: (e, gestureState) => {
+      console.log('pan responder end', gestureState);
+      if( recognizeDrag(gestureState)) {
+        Alert.alert(
+          'Add Favorite',
+          'Are you sure you wish to add ' + campsite.name + ' to favorites?',
+          [
+            {
+            text: 'Cancel',
+            style: 'cancel',
+            onPress: () => console.log('Cancel Pressed')
+          },
+          {
+            text: 'OK',
+            onPress: () => props.favorite ? console.log('Already a favorite') : props.markFavorite()
+          }
+          ],
+          { cancelable: false }
+        );
+      }
+      return true;
+    }
+  })
+
   if (campsite) {
     return (
+      <Animatable.View
+        animation='fadeInDown'
+        duration={2000}
+        delay={1000}
+        ref={view}
+        {...panResponder.panHandlers}
+        >
       <Card
         featuredTitle={campsite.name}
         image={{ uri: baseUrl + campsite.image }}
@@ -40,10 +84,11 @@ function RenderCampsite(props) {
         type='font-awesome'
         color='#5637DD'
         raised reverse
-        onPress={ () => onShowModal()}
+        onPress={ () => props.onShowModal()}
         />
         </View>
       </Card>
+      </Animatable.View>
     );
   }
   return <View />;
@@ -54,13 +99,22 @@ function RenderComments({ comments }) {
     return (
       <View style={{ margin: 10 }}>
         <Text style={{ fontSize: 14 }}>{item.text}</Text>
-        <Text style={{ fontSize: 12 }}>{item.rating} Stars</Text>
+        <Rating
+             startingValue={item.rating}
+             imageSize={10}
+             style={{alignItems: 'flex-start', paddingVertical: '5%'}}
+             readonly
+            />
         <Text style={{ fontSize: 12 }}>{`-- ${item.author}, ${item.date}`}</Text>
       </View>
     )
   };
 
   return (
+    <Animatable.View
+      animation='fadeInUp'
+      duration={2000}
+      delay={1000}>
     <Card title="Comments">
       <FlatList
         data={comments}
@@ -68,6 +122,7 @@ function RenderComments({ comments }) {
         keyExtractor={item => item.id.toString()}
       />
     </Card>
+    </Animatable.View>
   )
 }
 
@@ -75,6 +130,9 @@ class CampsiteInfo extends Component {
   constructor(props){
     super(props);
     this.state= {
+      rating: 5,
+      author: '',
+      text: '',
       showFeedbackModal: false
     }
   }
@@ -88,6 +146,20 @@ class CampsiteInfo extends Component {
 
   toggleFeedbackModal() {
     this.setState({ showFeedbackModal: !this.state.showFeedbackModal});
+  }
+
+  handleComment(campsiteId) {
+   this.props.postComment(campsiteId, this.state.rating, this.state.author, this.state.text);
+    this.toggleFeedbackModal();
+  }
+
+  resetForm(){
+    this.setState({
+      rating: 5,
+      author: '',
+      text: '',
+      showFeedbackModal: false
+    })
   }
 
   render() {
@@ -110,9 +182,45 @@ class CampsiteInfo extends Component {
         onRequestClose={() => this.toggleFeedbackModal()}
         >
           <View style={styles.modal}>
+            <Rating
+             showRating
+             startingValue={this.state.rating}
+             imageSize={40}
+             onFinishRating={(rating) => this.setState({rating: rating})}
+             style={styles.rating}
+            />
+            <Input
+            placeholder='Author'
+            leftIcon={{type: 'font-awesome', name: 'user-o'}}
+            leftIconContainerStyle={{paddingRight: 10}}
+            onChangeText={(text) => this.setState({author: text})}
+           
+            />
+            <Input
+            placeholder='Text'
+            leftIcon={{type: 'font-awesome', name: 'comment-o'}}
+            leftIconContainerStyle={{paddingRight: 10}}
+            onChangeText={(text) => this.setState({text: text})}
+           
+            />
+            <View>
+              <Button
+              title='Submit'
+              color='#5637DD'
+              onPress={() => {
+                console.log(JSON.stringify(this.props));
+                this.handleComment(campsiteId); 
+                this.resetForm();
+              }}
+              />
+            </View>
+
             <View styles={{margin: 10}}>
               <Button
-              onPress={ () => this.toggleFeedbackModal}
+              onPress={ () => {
+                this.toggleFeedbackModal();
+                this.resetForm();
+              }}
               color='#808080' title='Cancel'></Button>
             </View>
           </View>
@@ -141,5 +249,9 @@ const styles = StyleSheet.create({
   modal: {
     justifyContent: 'center',
     margin: 20
+  },
+
+  rating: {
+    paddingVertical: 10
   }
 })
