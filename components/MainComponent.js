@@ -8,6 +8,7 @@ import About from './AboutComponent';
 import Contact from './ContactComponent';
 import Reservation from './ReservationComponent';
 import Favorites from './FavoritesComponent';
+import Login from './Logincomponent';
 import { Icon } from 'react-native-elements';
 import SafeAreaView from 'react-native-safe-area-view';
 import { connect } from 'react-redux';
@@ -36,6 +37,29 @@ const FavoritesNavigator = createStackNavigator(
           },
           headerLeft: <Icon
               name='heart'
+              type='font-awesome'
+              iconStyle={styles.stackIcon}
+              onPress={() => navigation.toggleDrawer()}
+          />
+      })
+  }
+);
+
+const LoginNavigator = createStackNavigator(
+  {
+      Favorites: { screen: Login }
+  },
+  {
+      navigationOptions: ({navigation}) => ({
+          headerStyle: {
+              backgroundColor: '#5637DD'
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+              color: '#fff'
+          },
+          headerLeft: <Icon
+              name='sign-in'
               type='font-awesome'
               iconStyle={styles.stackIcon}
               onPress={() => navigation.toggleDrawer()}
@@ -187,6 +211,18 @@ const CustomDrawerContentComponent = props => (
 
 const MainNavigator = createDrawerNavigator(
   {
+    Login: { screen: LoginNavigator,
+      navigationOptions: {
+        drawerIcon: ({tintColor}) =>(
+          <Icon
+            name='sign-in'
+            type='font-awesome'
+            size={24}
+            color={tintColor}
+            />
+        ) 
+      }
+    },
     Home: { screen: HomeNavigator,
     navigationOptions: {
       drawerIcon: ({tintColor}) =>(
@@ -266,6 +302,7 @@ const MainNavigator = createDrawerNavigator(
      }
   },
   {
+    initialRouteName: 'Home',
     drawerBackgroundColor: '#CeC8FF',
     contentComponent: CustomDrawerContentComponent
   }
